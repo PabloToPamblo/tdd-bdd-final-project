@@ -12,6 +12,9 @@ unittests.xml
 db/*
 !db/.keep
 
+#ideaTemporalDocs
+.idea
+
 # SonarQube Reports
 .scannerwork/
 .sonarlint/
