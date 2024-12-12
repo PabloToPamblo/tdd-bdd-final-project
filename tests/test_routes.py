@@ -27,12 +27,13 @@ Test cases can be run with the following:
 import os
 import logging
 from decimal import Decimal
-from sndhdr import tests
+#from sndhdr import tests
+from urllib.parse import quote_plus
 from unittest import TestCase
 from time import time, sleep
 
 from black.brackets import dataclass
-
+from urllib.parse import quote_plus
 from service import app
 from service.common import status
 from service.common.status import HTTP_404_NOT_FOUND, HTTP_200_OK
@@ -213,6 +214,9 @@ class TestProductRoutes(TestCase):
     def test_delete_product(self):
 
         """It should Delete a Product"""
+        """COMENTO LINEAS DE GET PRODUCT PORQUE NO APUNTA A NINGÚN ENDPOINT
+        LA SOLUCIÓN ESTÁ EN CREAR UN ENDPOIND COUNT QUE DEVUELVA EL LEN
+        """
         test_product = self._create_products(5)[0]
         #product_count = self.get_product_count()
         response = self.client.delete(f"{BASE_URL}/{test_product.id}")
@@ -225,10 +229,33 @@ class TestProductRoutes(TestCase):
         #new_count = self.get_product_count()
         #self.assertEqual(new_count, product_count - 1)
 
+    def test_get_product_list(self):
+        self._create_products(5)
+        response = self.client.get(BASE_URL)
+        self.assertEqual(response.status_code, HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data),5 )
 
-    ######################################################################
-    # Utility functions
-    ######################################################################
+    def test_query_by_name(self):
+        """It should Query Products by name"""
+        products = self._create_products(5)
+        test_name = products[0].name
+        name_count = len([product for product in products if product.name == test_name])
+        response = self.client.get(
+            BASE_URL, query_string=f"name={quote_plus(test_name)}"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), name_count)
+        # check the data just to be sure
+        for product in data:
+            self.assertEqual(product["name"], test_name)
+
+
+
+######################################################################
+# Utility functions
+######################################################################
 
 
 
